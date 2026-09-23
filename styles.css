@@ -1,0 +1,521 @@
+/* ---------------------------------------------------------------------------
+   DjVu Viewer для Obsidian
+   Все цвета берём из переменных темы, чтобы плагин выглядел «родным»
+   и в светлой, и в тёмной теме.
+   --------------------------------------------------------------------------- */
+
+.djvu-container {
+	padding: 0;
+	overflow: hidden;
+}
+
+.djvu-root {
+	display: flex;
+	flex-direction: column;
+	height: 100%;
+	width: 100%;
+	background-color: var(--background-primary);
+	overflow: hidden;
+}
+
+/* --------------------------------------------------------------- панель */
+
+.djvu-toolbar {
+	display: flex;
+	align-items: center;
+	gap: 4px;
+	flex-wrap: wrap;
+	padding: 4px 8px;
+	border-bottom: 1px solid var(--background-modifier-border);
+	background-color: var(--background-secondary-alt);
+	flex: 0 0 auto;
+}
+
+.djvu-toolbar-group {
+	display: flex;
+	align-items: center;
+	gap: 2px;
+}
+
+.djvu-toolbar-right {
+	margin-left: auto;
+}
+
+.djvu-button {
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	width: 28px;
+	height: 28px;
+	border-radius: var(--radius-s, 4px);
+	cursor: pointer;
+	color: var(--icon-color);
+	opacity: var(--icon-opacity);
+}
+
+.djvu-button:hover {
+	background-color: var(--background-modifier-hover);
+	color: var(--icon-color-hover);
+	opacity: var(--icon-opacity-hover);
+}
+
+.djvu-button.djvu-active {
+	background-color: var(--background-modifier-hover);
+	color: var(--text-accent);
+	opacity: 1;
+}
+
+.djvu-button svg {
+	width: 16px;
+	height: 16px;
+}
+
+.djvu-page-box {
+	display: flex;
+	align-items: center;
+	gap: 4px;
+	padding: 0 6px;
+	font-size: var(--font-ui-small);
+	color: var(--text-muted);
+}
+
+.djvu-page-input {
+	width: 56px;
+	height: 26px;
+	padding: 0 6px;
+	font-size: var(--font-ui-small);
+	text-align: center;
+	border: 1px solid var(--background-modifier-border);
+	border-radius: var(--radius-s, 4px);
+	background-color: var(--background-primary);
+	color: var(--text-normal);
+}
+
+.djvu-page-input:focus {
+	border-color: var(--interactive-accent);
+	box-shadow: 0 0 0 2px var(--background-modifier-border-focus);
+}
+
+/* убираем стрелки у number-инпута — они мешают горячим клавишам */
+.djvu-page-input::-webkit-outer-spin-button,
+.djvu-page-input::-webkit-inner-spin-button {
+	-webkit-appearance: none;
+	margin: 0;
+}
+
+.djvu-page-total {
+	min-width: 46px;
+}
+
+.djvu-zoom-label {
+	min-width: 52px;
+	text-align: center;
+	font-size: var(--font-ui-small);
+	font-variant-numeric: tabular-nums;
+	color: var(--text-muted);
+	cursor: pointer;
+	padding: 2px 4px;
+	border-radius: var(--radius-s, 4px);
+	user-select: none;
+}
+
+.djvu-zoom-label:hover {
+	background-color: var(--background-modifier-hover);
+	color: var(--text-normal);
+}
+
+/* ------------------------------------------------------- прогресс-слайдер */
+
+.djvu-progress {
+	flex: 0 0 auto;
+	padding: 0 10px 2px;
+	background-color: var(--background-secondary-alt);
+	border-bottom: 1px solid var(--background-modifier-border);
+}
+
+.djvu-slider {
+	width: 100%;
+	margin: 0;
+}
+
+/* ------------------------------------------------------------- рабочая зона */
+
+.djvu-body {
+	display: flex;
+	flex: 1 1 auto;
+	min-height: 0;
+	overflow: hidden;
+}
+
+.djvu-viewport {
+	position: relative;
+	flex: 1 1 auto;
+	min-width: 0;
+	overflow: auto;
+	padding: 16px;
+	background-color: var(--background-primary-alt);
+	scroll-behavior: auto;
+}
+
+.djvu-pages {
+	display: flex;
+	min-height: 100%;
+}
+
+.djvu-pages-single {
+	align-items: flex-start;
+	justify-content: center;
+}
+
+.djvu-pages-continuous {
+	flex-direction: column;
+	align-items: center;
+	gap: 16px;
+}
+
+.djvu-slot {
+	display: flex;
+	justify-content: center;
+	flex: 0 0 auto;
+}
+
+.djvu-page {
+	position: relative;
+	background-color: var(--background-primary);
+	box-shadow: var(--shadow-s, 0 1px 3px rgba(0, 0, 0, 0.2));
+	border: 1px solid var(--background-modifier-border);
+	overflow: hidden;
+	flex: 0 0 auto;
+}
+
+.djvu-page-image {
+	display: block;
+	width: 100%;
+	height: 100%;
+	object-fit: contain;
+	image-rendering: auto;
+}
+
+.djvu-page-number {
+	position: absolute;
+	right: 6px;
+	bottom: 4px;
+	padding: 1px 6px;
+	font-size: var(--font-ui-smaller);
+	color: var(--text-faint);
+	background-color: var(--background-primary);
+	border-radius: var(--radius-s, 4px);
+	opacity: 0;
+	transition: opacity 120ms ease;
+	pointer-events: none;
+}
+
+.djvu-page:hover .djvu-page-number {
+	opacity: 0.85;
+}
+
+/* индикатор загрузки страницы */
+.djvu-page.djvu-loading::before,
+.djvu-page:not(.djvu-page-rendered)::before {
+	content: '';
+	position: absolute;
+	inset: 0;
+	background:
+		radial-gradient(circle at 50% 45%, var(--interactive-accent) 0 3px, transparent 4px) center / 24px 24px no-repeat,
+		var(--background-secondary);
+	opacity: 0.55;
+	animation: djvu-pulse 1.1s ease-in-out infinite;
+}
+
+.djvu-page.djvu-page-rendered::before {
+	content: none;
+}
+
+@keyframes djvu-pulse {
+	0%,
+	100% {
+		opacity: 0.3;
+	}
+	50% {
+		opacity: 0.7;
+	}
+}
+
+.djvu-page-error {
+	display: flex;
+	flex-direction: column;
+	gap: 8px;
+	align-items: center;
+	justify-content: center;
+	height: 100%;
+	padding: 24px;
+	text-align: center;
+	color: var(--text-error);
+	font-size: var(--font-ui-small);
+}
+
+.djvu-error-text {
+	max-width: 480px;
+	color: var(--text-muted);
+	word-break: break-word;
+}
+
+/* --------------------------------------------------------- пустое состояние */
+
+.djvu-empty {
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	justify-content: center;
+	gap: 14px;
+	width: 100%;
+	min-height: 60vh;
+	padding: 32px;
+	text-align: center;
+	color: var(--text-muted);
+}
+
+.djvu-empty-text {
+	max-width: 620px;
+	white-space: pre-wrap;
+	line-height: 1.5;
+}
+
+.djvu-empty-error .djvu-empty-text {
+	color: var(--text-error);
+}
+
+.djvu-spinner {
+	width: 28px;
+	height: 28px;
+	border: 3px solid var(--background-modifier-border);
+	border-top-color: var(--interactive-accent);
+	border-radius: 50%;
+	animation: djvu-spin 0.8s linear infinite;
+}
+
+@keyframes djvu-spin {
+	to {
+		transform: rotate(360deg);
+	}
+}
+
+/* ------------------------------------------------------------- статус-строка */
+
+.djvu-status {
+	display: flex;
+	align-items: center;
+	gap: 12px;
+	flex: 0 0 auto;
+	padding: 3px 10px;
+	border-top: 1px solid var(--background-modifier-border);
+	background-color: var(--background-secondary-alt);
+	font-size: var(--font-ui-smaller);
+	color: var(--text-faint);
+	font-variant-numeric: tabular-nums;
+	white-space: nowrap;
+	overflow: hidden;
+}
+
+.djvu-status-hint {
+	font-style: italic;
+}
+
+/* ----------------------------------------------------------- боковая панель */
+
+.djvu-sidebar {
+	display: flex;
+	flex-direction: column;
+	flex: 0 0 268px;
+	width: 268px;
+	min-width: 0;
+	border-right: 1px solid var(--background-modifier-border);
+	background-color: var(--background-secondary);
+	overflow: hidden;
+}
+
+.djvu-sidebar.djvu-hidden {
+	display: none;
+}
+
+.djvu-sidebar-tabs {
+	display: flex;
+	gap: 2px;
+	padding: 6px;
+	border-bottom: 1px solid var(--background-modifier-border);
+	flex: 0 0 auto;
+}
+
+.djvu-sidebar-tab {
+	display: flex;
+	align-items: center;
+	gap: 6px;
+	flex: 1 1 0;
+	justify-content: center;
+	padding: 4px 8px;
+	border-radius: var(--radius-s, 4px);
+	font-size: var(--font-ui-small);
+	color: var(--text-muted);
+	cursor: pointer;
+	user-select: none;
+}
+
+.djvu-sidebar-tab:hover {
+	background-color: var(--background-modifier-hover);
+	color: var(--text-normal);
+}
+
+.djvu-sidebar-tab.djvu-active {
+	background-color: var(--background-modifier-hover);
+	color: var(--text-accent);
+}
+
+.djvu-sidebar-tab svg {
+	width: 14px;
+	height: 14px;
+}
+
+.djvu-sidebar-body {
+	flex: 1 1 auto;
+	overflow-y: auto;
+	padding: 6px;
+}
+
+.djvu-sidebar-empty {
+	padding: 18px 12px;
+	font-size: var(--font-ui-small);
+	color: var(--text-faint);
+	text-align: center;
+	line-height: 1.5;
+}
+
+/* оглавление */
+
+.djvu-contents {
+	display: flex;
+	flex-direction: column;
+	gap: 1px;
+}
+
+.djvu-contents-item {
+	display: flex;
+	align-items: baseline;
+	gap: 4px;
+	padding: 4px 8px;
+	border-radius: var(--radius-s, 4px);
+	font-size: var(--font-ui-small);
+	color: var(--text-normal);
+	cursor: pointer;
+	line-height: 1.35;
+}
+
+.djvu-contents-item:hover {
+	background-color: var(--background-modifier-hover);
+}
+
+.djvu-contents-item.djvu-disabled {
+	cursor: default;
+	color: var(--text-faint);
+}
+
+.djvu-contents-label {
+	flex: 1 1 auto;
+	min-width: 0;
+	word-break: break-word;
+}
+
+.djvu-contents-page {
+	color: var(--text-faint);
+	font-variant-numeric: tabular-nums;
+	font-size: var(--font-ui-smaller);
+}
+
+/* миниатюры */
+
+.djvu-thumbs {
+	display: grid;
+	grid-template-columns: repeat(auto-fill, minmax(96px, 1fr));
+	gap: 8px;
+}
+
+.djvu-thumb {
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	gap: 3px;
+	padding: 4px;
+	border-radius: var(--radius-s, 4px);
+	border: 1px solid transparent;
+	cursor: pointer;
+	background-color: var(--background-primary);
+}
+
+.djvu-thumb:hover {
+	border-color: var(--background-modifier-border-hover);
+}
+
+.djvu-thumb.djvu-active {
+	border-color: var(--interactive-accent);
+}
+
+.djvu-thumb-placeholder {
+	width: 100%;
+	aspect-ratio: 1 / 1.414;
+	border-radius: 2px;
+	background: linear-gradient(180deg, var(--background-modifier-border) 0 2px, transparent 2px) 0 0 / 100% 12px repeat-y,
+		var(--background-secondary-alt);
+	opacity: 0.6;
+}
+
+.djvu-thumb-image {
+	width: 100%;
+	display: flex;
+	justify-content: center;
+}
+
+.djvu-thumb-image canvas {
+	max-width: 100%;
+	height: auto;
+	display: block;
+	box-shadow: var(--shadow-s, 0 1px 2px rgba(0, 0, 0, 0.15));
+}
+
+.djvu-thumb-label {
+	font-size: var(--font-ui-smaller);
+	color: var(--text-faint);
+	font-variant-numeric: tabular-nums;
+}
+
+/* ------------------------------------------------------------- прочее */
+
+.djvu-hidden {
+	display: none !important;
+}
+
+.djvu-overlay {
+	position: absolute;
+	inset: 0;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	background-color: rgba(0, 0, 0, 0.25);
+	z-index: 5;
+}
+
+/* узкие панели: прячем подписи, оставляем иконки */
+@media (max-width: 620px) {
+	.djvu-sidebar {
+		flex-basis: 190px;
+		width: 190px;
+	}
+}
+
+/* мобильная версия Obsidian (на случай, если плагин включат на телефоне) */
+.is-mobile .djvu-toolbar {
+	padding: 6px;
+}
+
+.is-mobile .djvu-button {
+	width: 34px;
+	height: 34px;
+}

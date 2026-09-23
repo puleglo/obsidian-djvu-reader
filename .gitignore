@@ -1,0 +1,6 @@
+node_modules/
+dist/
+dev/engine-bundle.mjs
+dev/*.djvu
+vendor/djvu-worker.txt
+*.log

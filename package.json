@@ -1,0 +1,35 @@
+{
+	"name": "obsidian-djvu-viewer",
+	"version": "1.0.5",
+	"description": "Чтение DjVu-файлов внутри Obsidian — полностью офлайн (djvu.js + Web Worker)",
+	"main": "dist/obsidian-djvu-viewer/main.js",
+	"private": true,
+	"scripts": {
+		"dev": "node esbuild.config.mjs --watch",
+		"build": "tsc -noEmit -skipLibCheck && node esbuild.config.mjs production",
+		"build:fast": "node esbuild.config.mjs production",
+		"watch": "node esbuild.config.mjs --watch",
+		"typecheck": "tsc -noEmit -skipLibCheck",
+		"harness:build": "node esbuild.config.mjs --harness",
+		"test:node": "node esbuild.config.mjs --harness && node dev/harness.mjs dev/DjVu3Spec_bundled.djvu",
+		"test:single": "node esbuild.config.mjs --harness && node dev/harness.mjs dev/DjVu3Spec_5-10.djvu",
+		"install:local": "node dev/install-local.mjs",
+		"zip": "node dev/make-zip.mjs"
+	},
+	"keywords": [
+		"obsidian",
+		"obsidian-plugin",
+		"djvu",
+		"djvu.js",
+		"offline"
+	],
+	"author": "you",
+	"license": "MIT",
+	"devDependencies": {
+		"@types/node": "^20.19.43",
+		"builtin-modules": "^4.0.0",
+		"esbuild": "^0.25.9",
+		"obsidian": "^1.10.3",
+		"typescript": "^5.6.3"
+	}
+}
