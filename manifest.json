@@ -5,6 +5,6 @@
 	"minAppVersion": "1.5.0",
 	"description": "Открывает и читает файлы .djvu/.djv прямо внутри Obsidian — постранично или лентой, с оглавлением, миниатюрами и запоминанием позиции. Полностью офлайн.",
 	"author": "chybypelniy",
-	"authorUrl": "https://github.com/chybypelniy",
+	"authorUrl": "https://github.com/puleglo",
 	"isDesktopOnly": true
 }
