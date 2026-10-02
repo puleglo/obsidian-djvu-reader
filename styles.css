@@ -489,7 +489,7 @@
 /* ------------------------------------------------------------- прочее */
 
 .djvu-hidden {
-	display: none !important;
+	display: none;
 }
 
 .djvu-overlay {
